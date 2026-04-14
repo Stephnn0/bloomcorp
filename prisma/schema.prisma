@@ -1,0 +1,158 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── Top-level organization ──
+
+model Team {
+  id        String              @id @default(uuid())
+  name      String
+  users     User[]
+  companies Company[]
+  employees Employee[]
+  flowers   FlowerArrangement[]
+  orders    Order[]
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+}
+
+// ── Auth / Users ──
+
+model User {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  name        String
+  role        UserRole @default(MANAGER)
+  firebaseUid String?  @unique
+  teamId      String
+  team        Team     @relation(fields: [teamId], references: [id])
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+}
+
+// ── Business models ──
+
+model Company {
+  id        String     @id @default(uuid())
+  name      String
+  email     String
+  phone     String?
+  address   String?
+  city      String?
+  state     String?
+  country   String?
+  logoUrl   String?
+  website   String?
+  isActive  Boolean    @default(true)
+  teamId    String
+  team      Team       @relation(fields: [teamId], references: [id])
+  employees Employee[]
+  orders    Order[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([email, teamId])
+}
+
+model Employee {
+  id         String    @id @default(uuid())
+  firstName  String
+  lastName   String
+  email      String
+  phone      String?
+  birthday   DateTime?
+  hireDate   DateTime?
+  department String?
+  position   String?
+  companyId  String
+  company    Company   @relation(fields: [companyId], references: [id])
+  teamId     String
+  team       Team      @relation(fields: [teamId], references: [id])
+  orders     Order[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([email, companyId])
+}
+
+model FlowerArrangement {
+  id          String      @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  imageUrl    String?
+  category    String?
+  occasion    String?
+  isActive    Boolean     @default(true)
+  teamId      String
+  team        Team        @relation(fields: [teamId], references: [id])
+  orderItems  OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  orderNumber     String      @unique @default(uuid())
+  companyId       String
+  company         Company     @relation(fields: [companyId], references: [id])
+  employeeId      String
+  employee        Employee    @relation(fields: [employeeId], references: [id])
+  teamId          String
+  team            Team        @relation(fields: [teamId], references: [id])
+  status          OrderStatus @default(PENDING)
+  occasion        String?
+  message         String?
+  deliveryDate    DateTime
+  deliveryAddress String?
+  totalAmount     Float
+  stripePaymentId String?
+  items           OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+model OrderItem {
+  id            String            @id @default(uuid())
+  orderId       String
+  order         Order             @relation(fields: [orderId], references: [id])
+  arrangementId String
+  arrangement   FlowerArrangement @relation(fields: [arrangementId], references: [id])
+  quantity      Int               @default(1)
+  price         Float
+  createdAt     DateTime          @default(now())
+}
+
+// ── Inquiries (Contact form) ──
+
+model Inquiry {
+  id          String   @id @default(uuid())
+  firstName   String
+  lastName    String
+  email       String
+  companyName String?
+  message     String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

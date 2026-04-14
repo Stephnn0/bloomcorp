@@ -2,6 +2,10 @@
 .env
 /node_modules/
 
+/scrape/env/
+/scrape/.env
 # React Router
 /.react-router/
 /build/
+
+/generated/prisma
