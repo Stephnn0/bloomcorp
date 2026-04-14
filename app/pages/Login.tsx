@@ -1,11 +1,13 @@
-import { Link } from "react-router";
+import { Link, useRouteLoaderData } from "react-router";
 import { useState } from "react";
 import {
-  auth,
+  getFirebaseAuth,
   signInWithEmailAndPassword,
+  type FirebaseConfig,
 } from "~/firebase.client";
 
 export default function Login() {
+  const rootData = useRouteLoaderData("root") as { firebaseConfig: FirebaseConfig };
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -17,6 +19,7 @@ export default function Login() {
     setLoading(true);
 
     try {
+      const auth = getFirebaseAuth(rootData.firebaseConfig);
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,

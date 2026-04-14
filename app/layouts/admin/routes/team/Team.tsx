@@ -1,9 +1,10 @@
-import { useLoaderData, useFetcher } from "react-router";
+import { useLoaderData, useFetcher, useRouteLoaderData } from "react-router";
 import { useState } from "react";
 import db from "~/db.server";
 import { getCurrentUser } from "~/auth.server";
 import { redirect } from "react-router";
 import { UserRole } from "generated/prisma/client";
+import type { FirebaseConfig } from "~/firebase.client";
 
 export async function loader({ request }: { request: Request }) {
   const user = await getCurrentUser(request);
@@ -21,7 +22,6 @@ export async function loader({ request }: { request: Request }) {
     teamMembers,
     currentUserId: user.id,
     teamId: user.teamId,
-    firebaseApiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? "",
   };
 }
 
@@ -31,8 +31,9 @@ const roleBadge: Record<string, string> = {
 };
 
 export default function Team() {
-  const { teamMembers, currentUserId, teamId, firebaseApiKey } =
+  const { teamMembers, currentUserId, teamId } =
     useLoaderData<typeof loader>();
+  const rootData = useRouteLoaderData("root") as { firebaseConfig: FirebaseConfig };
   const [showForm, setShowForm] = useState(false);
   const [formError, setFormError] = useState("");
   const [creating, setCreating] = useState(false);
@@ -59,7 +60,7 @@ export default function Team() {
     try {
       // Create Firebase user via REST API (doesn't affect admin's session)
       const fbRes = await fetch(
-        `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${firebaseApiKey}`,
+        `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${rootData.firebaseConfig.apiKey}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

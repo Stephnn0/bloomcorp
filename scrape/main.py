@@ -7,8 +7,25 @@ load_dotenv()
 
 SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
 
+AREAS = [
+"Downtown", "Brickell", "Wynwood", "Little Havana", "Little Haiti",
+"Design District", "Edgewater", "Midtown", "Overtown",
+"Coral Gables", "Coconut Grove", "Kendall", "Doral",
+"North Miami", "South Miami", "Miami Beach",
+"Sunny Isles", "Aventura", "Hialeah"
+]
+CATEGORIES = [
+"marketing agencies", "law firms", "real estate agencies",
+"construction companies", "restaurants", "dentists",
+"beauty salons", "fitness gyms", "software companies",
+"accounting firms", "insurance agencies", "consulting firms",
+"cleaning services", "logistics companies", "car dealerships",
+"event planners", "photography studios", "medical clinics",
+"ecommerce companies", "retail stores"
+]
+
 # ---- CONFIG ----
-QUERY = "marketing agencies"
+QUERY = "fitness gyms Brickell"
 CITY = "Miami"
 STATE = "FL"
 COUNTRY = "US"
