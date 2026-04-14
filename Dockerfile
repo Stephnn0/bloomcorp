@@ -1,22 +1,28 @@
-FROM node:20-alpine AS development-dependencies-env
-COPY . /app
+FROM node:20-alpine
+
+# Install OpenSSL
+RUN apk add --no-cache openssl
+
+# Set working directory
 WORKDIR /app
+
+# Copy package.json and package-lock.json for dependencies installation
+COPY package.json package-lock.json ./
+
+# Install dependencies (both production and development)
 RUN npm ci
 
-FROM node:20-alpine AS production-dependencies-env
-COPY ./package.json package-lock.json /app/
-WORKDIR /app
-RUN npm ci --omit=dev
+# Copy the entire application including prisma folder
+COPY . .
 
-FROM node:20-alpine AS build-env
-COPY . /app/
-COPY --from=development-dependencies-env /app/node_modules /app/node_modules
-WORKDIR /app
+# Generate Prisma client
+RUN npx prisma generate
+
+# Build the application (assuming you have a build script in package.json)
 RUN npm run build
 
-FROM node:20-alpine
-COPY ./package.json package-lock.json /app/
-COPY --from=production-dependencies-env /app/node_modules /app/node_modules
-COPY --from=build-env /app/build /app/build
-WORKDIR /app
+# Expose the port the app will run on (usually 3000 for Node.js apps)
+EXPOSE 3000
+
+# Command to start the app
 CMD ["npm", "run", "start"]
